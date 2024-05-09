@@ -3,6 +3,7 @@
 #include <string>
 #include <windows.h>
 #include <vector>
+#include <conio.h>
 
 namespace CLISNAKE
 {
@@ -75,9 +76,6 @@ namespace CLISNAKE
             }
         };
 
-        void Update() {
-        };
-
         void Input()
         {
             if (_kbhit())
@@ -102,21 +100,32 @@ namespace CLISNAKE
             }
         };
 
+        void End()
+        {
+            std::cout << "\nGame Over";
+            std::cout << "\nScore: " << score;
+            exit(0);
+        }
+
         void Logic()
         {
             switch (snakeDirection)
             {
             case UP:
-                snakeBody[0].y--;
+                snakeBody.emplace(snakeBody.begin(), SnakeCeil(snakeBody[0].x, snakeBody[0].y - 1));
+                snakeBody.pop_back();
                 break;
             case RIGHT:
-                snakeBody[0].x++;
+                snakeBody.emplace(snakeBody.begin(), SnakeCeil(snakeBody[0].x + 1, snakeBody[0].y));
+                snakeBody.pop_back();
                 break;
             case DOWN:
-                snakeBody[0].y++;
+                snakeBody.emplace(snakeBody.begin(), SnakeCeil(snakeBody[0].x, snakeBody[0].y + 1));
+                snakeBody.pop_back();
                 break;
             case LEFT:
-                snakeBody[0].x--;
+                snakeBody.emplace(snakeBody.begin(), SnakeCeil(snakeBody[0].x - 1, snakeBody[0].y));
+                snakeBody.pop_back();
                 break;
             default:
                 break;
@@ -127,13 +136,19 @@ namespace CLISNAKE
                 score++;
                 foodX = rand() % (width - 4) + 2;
                 foodY = rand() % (height - 4) + 2;
+                snakeBody.push_back(SnakeCeil(snakeBody[snakeBody.size() - 1].x, snakeBody[snakeBody.size() - 1].y));
+            }
+            if (snakeBody[0].x <= 0 || snakeBody[0].x >= width - 1 || snakeBody[0].y <= 0 || snakeBody[0].y >= height - 1)
+            {
+                End();
             }
 
-            if (snakeBody[0].x <= 0 || snakeBody[0].x >= width || snakeBody[0].y <= 0 || snakeBody[0].y >= height)
+            for (int i = 2; i < snakeBody.size(); i++)
             {
-                std::cout << "Game Over";
-                std::cout << "\nScore: " << score;
-                exit(0);
+                if (snakeBody[0].x == snakeBody[i].x && snakeBody[0].y == snakeBody[i].y)
+                {
+                    End();
+                }
             }
         };
 
@@ -152,10 +167,9 @@ namespace CLISNAKE
             while (true)
             {
                 Draw();
-                Update();
                 Input();
                 Logic();
-                Sleep(100);
+                Sleep(150);
             }
         };
     };
